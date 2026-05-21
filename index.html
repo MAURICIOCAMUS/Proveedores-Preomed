@@ -266,7 +266,7 @@
         <img src="https://www.preomed.cl/wp-content/uploads/2025/05/350px-rgb-min.webp" alt="Logo Preomed" class="header-logo">
         <h1>Proveedores Preomed</h1>
     </div>
-    <div class="refresh-status">🟢 Conectado a Google Drive. Logo corporativo e índices actualizados.</div>
+    <div class="refresh-status">🟢 Conectado a Google Drive. Columna Vencimiento agregada.</div>
 
     <div id="loader">🔄 Sincronizando y optimizando vista de datos... ⏳</div>
 
@@ -317,7 +317,7 @@
             </div>
         </div>
 
-        <!-- Tabla de alertas con encabezados sticky -->
+        <!-- Tabla de alertas -->
         <div class="table-container">
             <h3>⚠️ Alertas Próximos 15 Días</h3>
             <div class="table-responsive">
@@ -325,6 +325,7 @@
                     <thead>
                         <tr>
                             <th>Días Restantes</th>
+                            <th>Vencimiento</th>
                             <th>Monto</th>
                             <th>Proveedor</th>
                             <th>Emisión</th>
@@ -374,6 +375,7 @@
                         <thead>
                             <tr>
                                 <th>Días Restantes / Estado</th>
+                                <th>Vencimiento</th>
                                 <th>Monto</th>
                                 <th>Proveedor</th>
                                 <th>Emisión</th>
@@ -391,6 +393,7 @@
                         <thead>
                             <tr>
                                 <th>Días Restantes</th>
+                                <th>Vencimiento</th>
                                 <th>Monto</th>
                                 <th>Proveedor</th>
                                 <th>Emisión</th>
@@ -408,6 +411,7 @@
                         <thead>
                             <tr>
                                 <th>Estado</th>
+                                <th>Vencimiento</th>
                                 <th>Monto</th>
                                 <th>Proveedor</th>
                                 <th>Emisión</th>
@@ -643,12 +647,13 @@
                 let badge = `<span style="background-color: ${color}; color: white; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 0.85em;">${diasStr}</span>`;
                 return `<tr style="background-color: #fff4f4;">
                     <td>${badge}</td>
+                    <td>${formatDate(a.vDate)}</td>
                     <td><b>${formatCurrency(a.monto)}</b></td>
                     <td>${a.proveedor}</td>
                     <td>${formatDate(a.eDate)}</td>
                     <td>${a.folio}</td>
                 </tr>`;
-            }).join('') : `<tr><td colspan="5" style="text-align:center; color:#7f8c8d;">Sin alertas</td></tr>`;
+            }).join('') : `<tr><td colspan="6" style="text-align:center; color:#7f8c8d;">Sin alertas</td></tr>`;
 
             document.getElementById('tab-btn-resumen').innerText = `Resumen (${resumenArray.length})`;
             document.getElementById('tab-btn-vencidas').innerText = `Vencidas (${arr_vencidas.length})`;
@@ -667,6 +672,7 @@
                 }
                 return `<tr>
                     <td>${badge}</td>
+                    <td>${formatDate(a.vDate)}</td>
                     <td>${formatCurrency(a.monto)}</td>
                     <td>${a.proveedor}</td>
                     <td>${formatDate(a.eDate)}</td>
@@ -674,9 +680,9 @@
                 </tr>`;
             };
 
-            document.getElementById('list-vencidas').innerHTML = arr_vencidas.length > 0 ? arr_vencidas.map(a => renderRow(a)).join('') : `<tr><td colspan="5" style="text-align:center;">Vacio</td></tr>`;
-            document.getElementById('list-por-vencer').innerHTML = arr_vencer.length > 0 ? arr_vencer.map(a => renderRow(a)).join('') : `<tr><td colspan="5" style="text-align:center;">Vacio</td></tr>`;
-            document.getElementById('list-pagadas').innerHTML = arr_pagadas.length > 0 ? arr_pagadas.map(a => renderRow(a, true)).join('') : `<tr><td colspan="5" style="text-align:center;">Vacio</td></tr>`;
+            document.getElementById('list-vencidas').innerHTML = arr_vencidas.length > 0 ? arr_vencidas.map(a => renderRow(a)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
+            document.getElementById('list-por-vencer').innerHTML = arr_vencer.length > 0 ? arr_vencer.map(a => renderRow(a)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
+            document.getElementById('list-pagadas').innerHTML = arr_pagadas.length > 0 ? arr_pagadas.map(a => renderRow(a, true)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
 
             document.getElementById('loader').style.display = 'none';
             document.getElementById('dashboard-content').style.display = 'block';
@@ -708,7 +714,8 @@
                 if (activeTab.id === 'resumen') {
                     text = row.cells[0].textContent.toLowerCase(); 
                 } else {
-                    text = row.cells[2].textContent.toLowerCase() + " " + row.cells[4].textContent.toLowerCase();
+                    // Ahora: Proveedor está en cells[3] y Folio en cells[5]
+                    text = row.cells[3].textContent.toLowerCase() + " " + row.cells[5].textContent.toLowerCase();
                 }
                 
                 row.style.display = text.includes(filter) ? "" : "none";
