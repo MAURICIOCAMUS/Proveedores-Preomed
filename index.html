@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Diseño Base Responsivo (Mobile-First y Desktop Adaptable) */
+        /* Diseño Base Responsivo */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f4f7f6; 
@@ -54,22 +54,28 @@
             margin-bottom: 20px; 
         }
 
-        /* Contenedor del Filtro de Año */
+        /* Contenedores de Filtros alineados */
+        .filters-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
         .filter-container { 
-            display: block;
-            text-align: center; 
-            margin: 0 auto 20px auto; 
             background: #fff; 
-            padding: 12px; 
+            padding: 12px 20px; 
             border-radius: 8px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            max-width: 90%;
             border-top: 3px solid #3498db;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            box-sizing: border-box;
+            text-align: left;
         }
-        @media (min-width: 768px) {
-            .filter-container { display: inline-block; position: relative; left: 50%; transform: translateX(-50%); }
-        }
-        .filter-container label { font-weight: bold; color: #34495e; margin-right: 8px; font-size: 1em;}
+        .filter-container label { font-weight: bold; color: #34495e; display: block; margin-bottom: 5px; font-size: 0.95em;}
         .filter-container select { 
             padding: 8px 12px; 
             font-size: 1em; 
@@ -80,14 +86,12 @@
             font-weight: bold; 
             cursor: pointer;
             width: 100%;
-            margin-top: 5px;
+            outline: none;
             box-sizing: border-box;
         }
-        @media (min-width: 768px) {
-            .filter-container select { width: auto; margin-top: 0; }
-        }
+        .filter-container select:hover { border-color: #3498db; }
 
-        /* Bloques de KPIs (Tarjetas de Resumen) */
+        /* Bloques de KPIs (Optimizados para mostrar saldo mensual + acumulado) */
         .kpi-container { 
             display: flex; 
             flex-direction: column;
@@ -95,7 +99,7 @@
             margin-bottom: 25px;
         }
         @media (min-width: 768px) {
-            .kpi-container { flex-direction: row; justify-content: space-between; gap: 20px; }
+            .kpi-container { flex-direction: row; justify-content: space-between; gap: 15px; }
         }
         .kpi-card { 
             background: #fff; 
@@ -107,20 +111,34 @@
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
             flex: 1;
+            min-width: 0;
         }
         .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-        .kpi-card h3 { margin: 0 0 5px; color: #7f8c8d; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
-        .kpi-card h2 { margin: 0; font-size: 1.8em; }
-        @media (min-width: 768px) {
-            .kpi-card { padding: 25px; }
-            .kpi-card h3 { font-size: 1.1em; }
-            .kpi-card h2 { font-size: 2.2em; }
+        .kpi-card h3 { margin: 0 0 5px; color: #7f8c8d; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+        .kpi-card h2 { margin: 0 0 4px 0; font-size: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Estilos para el texto de acumulado */
+        .kpi-card .accumulated-text {
+            font-size: 0.82em;
+            color: #7f8c8d;
+            border-top: 1px dashed #eee;
+            padding-top: 4px;
+            margin-top: 4px;
+        }
+        .kpi-card .accumulated-text strong {
+            color: #34495e;
+        }
+
+        @media (min-width: 992px) {
+            .kpi-card { padding: 20px; }
+            .kpi-card h3 { font-size: 0.95em; }
+            .kpi-card h2 { font-size: 1.8em; }
         }
         .kpi-card.vencida { border-color: #e74c3c; } .kpi-card.vencida h2 { color: #e74c3c; }
         .kpi-card.por-vencer { border-color: #f39c12; } .kpi-card.por-vencer h2 { color: #f39c12; }
+        .kpi-card.activa { border-color: #3498db; } .kpi-card.activa h2 { color: #3498db; }
         .kpi-card.pagado { border-color: #2ecc71; } .kpi-card.pagado h2 { color: #2ecc71; }
         
-        /* Contenedores de Gráficos y Tablas Auxiliares */
         .charts-container { 
             display: flex; 
             flex-direction: column;
@@ -156,7 +174,6 @@
             font-size: 1.1em;
         }
         
-        /* Tablas y Contenedores con Desplazamiento Horizontal */
         .table-container { 
             background: #fff; 
             border-radius: 10px; 
@@ -179,7 +196,6 @@
         }
         th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap; }
         
-        /* ENCABEZADO INMOVILIZADO (STICKY) */
         th { 
             background-color: #f8f9fa; 
             color: #2c3e50; 
@@ -194,7 +210,31 @@
         
         tr:hover { background-color: #fcfcfc; }
         
-        /* Sección de Pestañas (Tabs) Detallada */
+        .group-header {
+            background-color: #e8f4f8 !important;
+            font-weight: bold;
+            border-top: 2px solid #bdc3c7;
+            cursor: pointer;
+            user-select: none;
+        }
+        .group-header:hover {
+            background-color: #d6eaf8 !important;
+        }
+        .chevron {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            margin-right: 8px;
+            font-size: 0.9em;
+            color: #3498db;
+        }
+        .group-header.expanded .chevron {
+            transform: rotate(90deg);
+        }
+        .child-row {
+            display: none;
+            background-color: #ffffff;
+        }
+
         .tabs-section { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         @media (min-width: 768px) { .tabs-section { padding: 25px; } }
         .tabs-section h3 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 1.2em; }
@@ -234,7 +274,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* Buscador adaptable */
         .search-container { margin-bottom: 15px; display: flex; width: 100%; }
         .search-input { 
             padding: 10px 12px; 
@@ -249,11 +288,9 @@
             .search-input { width: 320px; }
         }
 
-        /* Indicador de Carga */
         #loader { display: block; text-align: center; padding: 40px; font-weight: bold; color: #3498db; font-size: 1.2em; }
         #dashboard-content { display: none; }
         
-        /* Estilos específicos para tabla de resumen */
         .col-vencida { color: #e74c3c; font-weight: bold; }
         .col-vencer { color: #f39c12; font-weight: bold; }
         .col-total { color: #2c3e50; font-weight: bold; background-color: #f4f7f6; }
@@ -266,39 +303,70 @@
         <img src="https://www.preomed.cl/wp-content/uploads/2025/05/350px-rgb-min.webp" alt="Logo Preomed" class="header-logo">
         <h1>Proveedores Preomed</h1>
     </div>
-    <div class="refresh-status">🟢 Conectado a Google Drive. Columna Vencimiento agregada.</div>
+    <div class="refresh-status">🟢 Conectado a Google Drive. Filtros por año y mes con saldos acumulados activos.</div>
 
     <div id="loader">🔄 Sincronizando y optimizando vista de datos... ⏳</div>
 
     <div id="dashboard-content">
-        <!-- Selector de Año adaptable -->
-        <div class="filter-container">
-            <label for="yearFilter">📅 Filtro Año Vencimiento:</label>
-            <select id="yearFilter" onchange="applyYearFilter()">
-                <option value="All">Todos los años</option>
-            </select>
+        <!-- Grupo de Filtros de Tiempo -->
+        <div class="filters-wrapper">
+            <!-- Selector de Año adaptable -->
+            <div class="filter-container">
+                <label for="yearFilter">📅 Año Vencimiento:</label>
+                <select id="yearFilter" onchange="applyTimeFilters()">
+                    <option value="All">Todos los años</option>
+                </select>
+            </div>
+            
+            <!-- Selector de Mes adaptable (Nuevo) -->
+            <div class="filter-container">
+                <label for="monthFilter">📆 Mes Vencimiento:</label>
+                <select id="monthFilter" onchange="applyTimeFilters()">
+                    <option value="All">Todos los meses</option>
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Bloque de KPIs -->
+        <!-- Bloque de KPIs (Modificado para mostrar Saldo Mensual + Acumulado) -->
         <div class="kpi-container">
+            <!-- 1. Deuda Vencida -->
             <div class="kpi-card vencida" onclick="switchTab('vencidas')">
                 <h3>Deuda Vencida</h3>
                 <h2 id="kpi-vencida">$0</h2>
-                <small style="color: #7f8c8d; font-size: 0.75em;">Tocar para detalles</small>
+                <div class="accumulated-text" id="kpi-vencida-acum">Acumulado: <strong>$0</strong></div>
             </div>
+            <!-- 2. Deuda por Vencer -->
             <div class="kpi-card por-vencer" onclick="switchTab('por-vencer')">
                 <h3>Deuda por Vencer</h3>
                 <h2 id="kpi-por-vencer">$0</h2>
-                <small style="color: #7f8c8d; font-size: 0.75em;">Tocar para detalles</small>
+                <div class="accumulated-text" id="kpi-por-vencer-acum">Acumulado: <strong>$0</strong></div>
             </div>
+            <!-- 3. Deuda Activa (Vencida + Por Vencer) -->
+            <div class="kpi-card activa" onclick="switchTab('resumen')">
+                <h3>Deuda Activa Total</h3>
+                <h2 id="kpi-activa">$0</h2>
+                <div class="accumulated-text" id="kpi-activa-acum">Acumulado: <strong>$0</strong></div>
+            </div>
+            <!-- 4. Total Pagado -->
             <div class="kpi-card pagado" onclick="switchTab('pagadas')">
                 <h3>Total Pagado</h3>
                 <h2 id="kpi-pagado">$0</h2>
-                <small style="color: #7f8c8d; font-size: 0.75em;">Tocar para detalles</small>
+                <div class="accumulated-text" id="kpi-pagado-acum">Acumulado: <strong>$0</strong></div>
             </div>
         </div>
 
-        <!-- Gráfico y Top 5 adaptables -->
         <div class="charts-container">
             <div class="chart-box">
                 <h3>Distribución de Estados</h3>
@@ -310,14 +378,13 @@
                 <h3>Top 5 Deuda Vencida</h3>
                 <div class="table-responsive" style="max-height: 250px;">
                     <table>
-                        <thead><tr><th>Proveedor</th><th>Monto Vencido</th></tr></thead>
+                        <thead><tr><th>Monto Vencido</th><th>Proveedor</th></tr></thead>
                         <tbody id="top-vencidos-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Tabla de alertas -->
         <div class="table-container">
             <h3>⚠️ Alertas Próximos 15 Días</h3>
             <div class="table-responsive">
@@ -337,47 +404,27 @@
             </div>
         </div>
 
-        <!-- Sección de detalles interactiva con pestañas adaptables -->
         <div class="tabs-section" id="detalle-listados">
             <h3>📂 Listado Detallado General</h3>
             <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" onkeyup="filterTables()" placeholder="🔍 Buscar proveedor o folio...">
+                <input text="text" id="searchInput" class="search-input" onkeyup="filterTables()" placeholder="🔍 Buscar proveedor o folio...">
             </div>
             <div class="tabs-buttons">
-                <button class="tab-btn btn-resumen active" onclick="switchTab('resumen')" id="tab-btn-resumen">Resumen por Proveedor</button>
-                <button class="tab-btn btn-vencidas" onclick="switchTab('vencidas')" id="tab-btn-vencidas">Vencidas</button>
+                <button class="tab-btn btn-vencidas active" onclick="switchTab('vencidas')" id="tab-btn-vencidas">Vencidas</button>
                 <button class="tab-btn btn-vencer" onclick="switchTab('por-vencer')" id="tab-btn-por-vencer">Por Vencer</button>
                 <button class="tab-btn btn-pagadas" onclick="switchTab('pagadas')" id="tab-btn-pagadas">Pagadas</button>
-            </div>
-
-            <!-- Tabla agrupada por proveedor -->
-            <div id="resumen" class="tab-content active">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Proveedor</th>
-                                <th>Deuda Vencida</th>
-                                <th>Deuda Por Vencer</th>
-                                <th style="background-color: #ecf0f1;">Deuda Activa Total</th>
-                                <th>Total Pagado Histórico</th>
-                            </tr>
-                        </thead>
-                        <tbody id="list-resumen"></tbody>
-                    </table>
-                </div>
+                <button class="tab-btn btn-resumen" onclick="switchTab('resumen')" id="tab-btn-resumen">Resumen por Proveedor</button>
             </div>
 
             <!-- Tablas de detalle -->
-            <div id="vencidas" class="tab-content">
+            <div id="vencidas" class="tab-content active">
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Días Restantes / Estado</th>
+                                <th>Estado</th>
                                 <th>Vencimiento</th>
                                 <th>Monto</th>
-                                <th>Proveedor</th>
                                 <th>Emisión</th>
                                 <th>Folio</th>
                             </tr>
@@ -395,7 +442,6 @@
                                 <th>Días Restantes</th>
                                 <th>Vencimiento</th>
                                 <th>Monto</th>
-                                <th>Proveedor</th>
                                 <th>Emisión</th>
                                 <th>Folio</th>
                             </tr>
@@ -413,12 +459,29 @@
                                 <th>Estado</th>
                                 <th>Vencimiento</th>
                                 <th>Monto</th>
-                                <th>Proveedor</th>
                                 <th>Emisión</th>
                                 <th>Folio</th>
                             </tr>
                         </thead>
                         <tbody id="list-pagadas"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabla Resumen -->
+            <div id="resumen" class="tab-content">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Deuda Vencida</th>
+                                <th>Deuda Por Vencer</th>
+                                <th style="background-color: #ecf0f1;">Deuda Activa Total</th>
+                                <th>Total Pagado Histórico</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-resumen"></tbody>
                     </table>
                 </div>
             </div>
@@ -433,6 +496,10 @@
         let isFirstLoad = true;
 
         window.onload = function() {
+            // NUEVO: Pre-seleccionar el mes en curso en el filtro HTML al abrir
+            const currentMonth = new Date().getMonth();
+            document.getElementById('monthFilter').value = currentMonth;
+            
             loadData(CSV_URL);
         };
 
@@ -462,7 +529,17 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     globalRows = results.data;
-                    processData('2026');
+                    
+                    // Inicializar los años para armar el selector la primera vez
+                    buildYearSelectorOptions();
+                    
+                    // Leer los filtros actuales (año 2026 por defecto y mes en curso)
+                    const defYear = availableYears.has(2026) ? '2026' : Array.from(availableYears).sort((a,b)=>b-a)[0] || 'All';
+                    if (document.getElementById('yearFilter').value === 'All') {
+                        document.getElementById('yearFilter').value = defYear;
+                    }
+                    
+                    applyTimeFilters();
                 },
                 error: function() {
                     alert("Error al sincronizar con Google Drive.");
@@ -471,12 +548,44 @@
             });
         }
 
-        function applyYearFilter() {
-            let selectedYear = document.getElementById('yearFilter').value;
-            processData(selectedYear);
+        function buildYearSelectorOptions() {
+            let rows = globalRows;
+            let headerRowIndex = -1;
+            for(let i=0; i<rows.length; i++) {
+                let rowText = rows[i].join('').toUpperCase();
+                if(rowText.includes('ESTADO') && (rowText.includes('MONTO') || rowText.includes('VALOR'))) {
+                    headerRowIndex = i; break;
+                }
+            }
+            if(headerRowIndex === -1) return;
+
+            const headers = rows[headerRowIndex].map(h => h.trim().toUpperCase());
+            const colMap = {};
+            headers.forEach((h, idx) => { if (!(h in colMap)) colMap[h] = idx; });
+            
+            const idxVenc = colMap['VENCIMIENTO'] || colMap['FECHA VENCIMIENTO'];
+
+            for(let i = headerRowIndex + 1; i < rows.length; i++) {
+                let fechaVencRaw = rows[i][idxVenc];
+                let vDate = parseDate(fechaVencRaw);
+                if (vDate) availableYears.add(vDate.getFullYear());
+            }
+
+            let yearSelect = document.getElementById('yearFilter');
+            Array.from(availableYears).sort((a,b) => b - a).forEach(y => {
+                let opt = document.createElement('option');
+                opt.value = y; opt.innerHTML = y;
+                yearSelect.appendChild(opt);
+            });
         }
 
-        function processData(filterYear) {
+        function applyTimeFilters() {
+            let selectedYear = document.getElementById('yearFilter').value;
+            let selectedMonth = document.getElementById('monthFilter').value;
+            processData(selectedYear, selectedMonth);
+        }
+
+        function processData(filterYear, filterMonth) {
             let rows = globalRows;
             let headerRowIndex = -1;
             for(let i=0; i<rows.length; i++) {
@@ -496,12 +605,15 @@
             const colMap = {};
             headers.forEach((h, idx) => { if (!(h in colMap)) colMap[h] = idx; });
 
+            // Variables para Totales Filtrados del Mes
             let d_vencida = 0, d_vencer = 0, d_pagado = 0;
+            // Variables para Totales ACUMULADOS de todo el año seleccionado (o histórico completo)
+            let accum_vencida = 0, accum_vencer = 0, accum_pagado = 0;
+
             let proveedores_map = {}; 
             let resumen_proveedores = {}; 
 
             let alertas = [], arr_vencidas = [], arr_vencer = [], arr_pagadas = [];
-            
             const today = new Date();
             today.setHours(0,0,0,0);
 
@@ -539,13 +651,33 @@
                 let fechaVencRaw = row[colMap['VENCIMIENTO']] || row[colMap['FECHA VENCIMIENTO']] || '';
                 let vDate = parseDate(fechaVencRaw);
                 
+                // --- MATEMÁTICA Y FILTRADO ---
+                let matchesYear = true;
+                let matchesMonth = true;
+
                 if (vDate) {
-                    let year = vDate.getFullYear();
-                    if(isFirstLoad) availableYears.add(year);
-                    if(filterYear !== 'All' && String(year) !== String(filterYear)) continue;
+                    let y = vDate.getFullYear();
+                    let m = vDate.getMonth(); // 0 a 11
+
+                    // Evaluar filtro de año
+                    if(filterYear !== 'All' && String(y) !== String(filterYear)) matchesYear = false;
+                    // Evaluar filtro de mes
+                    if(filterMonth !== 'All' && String(m) !== String(filterMonth)) matchesMonth = false;
                 } else {
-                    if(filterYear !== 'All') continue; 
+                    if(filterYear !== 'All' || filterMonth !== 'All') {
+                        matchesYear = false; matchesMonth = false;
+                    }
                 }
+
+                // Cálculo ACUMULADO (Suma todo lo que calza con el año, ignorando el mes)
+                if (matchesYear) {
+                    if (estado === 'VENCIDA') accum_vencida += monto;
+                    else if (estado === 'POR VENCER' || estado === 'POR PAGAR') accum_vencer += monto;
+                    else if (estado === 'PAGADO') accum_pagado += monto;
+                }
+
+                // Si no cumple ambos filtros de tiempo, saltamos el registro para las tablas específicas del mes
+                if (!matchesYear || !matchesMonth) continue;
 
                 let diffDays = vDate ? Math.ceil((vDate - today) / (1000 * 60 * 60 * 24)) : null;
                 let record = { proveedor, folio, monto, eDate, vDate, diffDays, estado };
@@ -573,17 +705,7 @@
                 }
             }
 
-            if(isFirstLoad) {
-                let yearSelect = document.getElementById('yearFilter');
-                Array.from(availableYears).sort((a,b) => b - a).forEach(y => {
-                    let opt = document.createElement('option');
-                    opt.value = y; opt.innerHTML = "Año " + y;
-                    if(String(y) === '2026') opt.selected = true; 
-                    yearSelect.appendChild(opt);
-                });
-                isFirstLoad = false;
-            }
-
+            // Procesar tabla de Resumen por Proveedor
             let resumenArray = Object.keys(resumen_proveedores).map(p => {
                 let d = resumen_proveedores[p];
                 return {
@@ -610,14 +732,21 @@
             document.getElementById('list-resumen').innerHTML = resumenHtml;
 
             alertas.sort((a,b) => a.diffDays - b.diffDays);
-            arr_vencidas.sort((a,b) => (a.vDate || 0) - (b.vDate || 0));
-            arr_vencer.sort((a,b) => (a.vDate || 0) - (b.vDate || 0));
-            arr_pagadas.sort((a,b) => (b.vDate || 0) - (a.vDate || 0)); 
-
+            
+            // --- ACTUALIZAR TARJETAS KPI (Mensual grande + Acumulado pequeño) ---
             document.getElementById('kpi-vencida').innerText = formatCurrency(d_vencida);
+            document.getElementById('kpi-vencida-acum').innerHTML = `Acumulado: <strong>${formatCurrency(accum_vencida)}</strong>`;
+            
             document.getElementById('kpi-por-vencer').innerText = formatCurrency(d_vencer);
+            document.getElementById('kpi-por-vencer-acum').innerHTML = `Acumulado: <strong>${formatCurrency(accum_vencer)}</strong>`;
+            
+            document.getElementById('kpi-activa').innerText = formatCurrency(d_vencida + d_vencer);
+            document.getElementById('kpi-activa-acum').innerHTML = `Acumulado: <strong>${formatCurrency(accum_vencida + accum_vencer)}</strong>`;
+            
             document.getElementById('kpi-pagado').innerText = formatCurrency(d_pagado);
+            document.getElementById('kpi-pagado-acum').innerHTML = `Acumulado: <strong>${formatCurrency(accum_pagado)}</strong>`;
 
+            // Gráfico
             const ctx = document.getElementById('estadoChart').getContext('2d');
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
@@ -639,7 +768,7 @@
             });
 
             let top5 = Object.keys(proveedores_map).map(k => ({p: k, m: proveedores_map[k]})).sort((a,b) => b.m - a.m).slice(0,5);
-            document.getElementById('top-vencidos-body').innerHTML = top5.length > 0 ? top5.map(t => `<tr><td>${t.p}</td><td>${formatCurrency(t.m)}</td></tr>`).join('') : `<tr><td colspan="2" style="text-align:center; color:#7f8c8d;">Sin deudas</td></tr>`;
+            document.getElementById('top-vencidos-body').innerHTML = top5.length > 0 ? top5.map(t => `<tr><td><b>${formatCurrency(t.m)}</b></td><td>${t.p}</td></tr>`).join('') : `<tr><td colspan="2" style="text-align:center; color:#7f8c8d;">Sin deudas</td></tr>`;
 
             document.getElementById('alertas-body').innerHTML = alertas.length > 0 ? alertas.map(a => {
                 let diasStr = a.diffDays === 0 ? "Hoy" : `${a.diffDays} d`;
@@ -660,33 +789,72 @@
             document.getElementById('tab-btn-por-vencer').innerText = `Por Vencer (${arr_vencer.length})`;
             document.getElementById('tab-btn-pagadas').innerText = `Pagadas (${arr_pagadas.length})`;
 
-            const renderRow = (a, isPagado = false) => {
-                let badge = "";
-                if(isPagado) {
-                    badge = `<span style="background-color: #2ecc71; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">Pagado</span>`;
-                } else {
-                    if(a.diffDays === null) badge = "-";
-                    else if (a.diffDays < 0) badge = `<span style="background-color: #e74c3c; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">-${Math.abs(a.diffDays)} d</span>`;
-                    else if (a.diffDays === 0) badge = `<span style="background-color: #e74c3c; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">Hoy</span>`;
-                    else badge = `<span style="background-color: ${a.diffDays <= 7 ? '#f39c12':'#3498db'}; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">${a.diffDays} d</span>`;
-                }
-                return `<tr>
-                    <td>${badge}</td>
-                    <td>${formatDate(a.vDate)}</td>
-                    <td>${formatCurrency(a.monto)}</td>
-                    <td>${a.proveedor}</td>
-                    <td>${formatDate(a.eDate)}</td>
-                    <td>${a.folio}</td>
-                </tr>`;
+            const renderGroupedTable = (arr, isPagado = false) => {
+                if (arr.length === 0) return `<tr><td colspan="5" style="text-align:center;">Vacio</td></tr>`;
+                
+                let grouped = {};
+                arr.forEach(a => {
+                    if (!grouped[a.proveedor]) grouped[a.proveedor] = [];
+                    grouped[a.proveedor].push(a);
+                });
+                
+                let providers = Object.keys(grouped).sort();
+                let html = '';
+                
+                providers.forEach(p => {
+                    let invoices = grouped[p];
+                    invoices.sort((a,b) => (a.vDate || 0) - (b.vDate || 0));
+                    let subtotal = invoices.reduce((sum, inv) => sum + inv.monto, 0);
+                    
+                    html += `<tr class="group-header" onclick="toggleGroup(this)" data-proveedor="${p.toLowerCase()}">
+                        <td colspan="3" style="color: #2980b9;">
+                            <span class="chevron">▶</span> 🏢 ${p}
+                        </td>
+                        <td colspan="2" style="text-align: right; color: #2980b9;">
+                            Total: ${formatCurrency(subtotal)} | ${invoices.length} doc(s)
+                        </td>
+                    </tr>`;
+                    
+                    invoices.forEach(a => {
+                        let badge = "";
+                        if(isPagado) {
+                            badge = `<span style="background-color: #2ecc71; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">Pagado</span>`;
+                        } else {
+                            if(a.diffDays === null) badge = "-";
+                            else if (a.diffDays < 0) badge = `<span style="background-color: #e74c3c; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">-${Math.abs(a.diffDays)} d</span>`;
+                            else if (a.diffDays === 0) badge = `<span style="background-color: #e74c3c; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">Hoy</span>`;
+                            else badge = `<span style="background-color: ${a.diffDays <= 7 ? '#f39c12':'#3498db'}; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;">${a.diffDays} d</span>`;
+                        }
+                        html += `<tr class="child-row" data-proveedor="${p.toLowerCase()}" data-folio="${a.folio.toLowerCase()}">
+                            <td>${badge}</td>
+                            <td>${formatDate(a.vDate)}</td>
+                            <td>${formatCurrency(a.monto)}</td>
+                            <td>${formatDate(a.eDate)}</td>
+                            <td>${a.folio}</td>
+                        </tr>`;
+                    });
+                });
+                return html;
             };
 
-            document.getElementById('list-vencidas').innerHTML = arr_vencidas.length > 0 ? arr_vencidas.map(a => renderRow(a)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
-            document.getElementById('list-por-vencer').innerHTML = arr_vencer.length > 0 ? arr_vencer.map(a => renderRow(a)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
-            document.getElementById('list-pagadas').innerHTML = arr_pagadas.length > 0 ? arr_pagadas.map(a => renderRow(a, true)).join('') : `<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>`;
+            document.getElementById('list-vencidas').innerHTML = renderGroupedTable(arr_vencidas);
+            document.getElementById('list-por-vencer').innerHTML = renderGroupedTable(arr_vencer);
+            document.getElementById('list-pagadas').innerHTML = renderGroupedTable(arr_pagadas, true);
 
             document.getElementById('loader').style.display = 'none';
             document.getElementById('dashboard-content').style.display = 'block';
         }
+
+        window.toggleGroup = function(headerRow) {
+            headerRow.classList.toggle('expanded');
+            let isExpanded = headerRow.classList.contains('expanded');
+            
+            let next = headerRow.nextElementSibling;
+            while(next && next.classList.contains('child-row')) {
+                next.style.display = isExpanded ? 'table-row' : 'none';
+                next = next.nextElementSibling;
+            }
+        };
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -706,19 +874,56 @@
         function filterTables() {
             const filter = document.getElementById('searchInput').value.toLowerCase();
             const activeTab = document.querySelector('.tab-content.active');
-            const rows = activeTab.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                if(row.cells.length < 2) return; 
+            
+            if (activeTab.id === 'resumen') {
+                const rows = activeTab.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if(row.cells.length < 2) return; 
+                    let text = row.cells[0].textContent.toLowerCase(); 
+                    row.style.display = text.includes(filter) ? "" : "none";
+                });
+                return;
+            }
+
+            const groups = activeTab.querySelectorAll('.group-header');
+            
+            groups.forEach(group => {
+                let providerName = group.getAttribute('data-proveedor');
+                let groupMatch = providerName.includes(filter);
+                let hasChildMatch = false;
                 
-                let text = ""; 
-                if (activeTab.id === 'resumen') {
-                    text = row.cells[0].textContent.toLowerCase(); 
-                } else {
-                    // Ahora: Proveedor está en cells[3] y Folio en cells[5]
-                    text = row.cells[3].textContent.toLowerCase() + " " + row.cells[5].textContent.toLowerCase();
+                let next = group.nextElementSibling;
+                let children = [];
+                
+                while(next && next.classList.contains('child-row')) {
+                    children.push(next);
+                    next = next.nextElementSibling;
                 }
                 
-                row.style.display = text.includes(filter) ? "" : "none";
+                children.forEach(child => {
+                    let childMatch = child.getAttribute('data-folio').includes(filter) || child.getAttribute('data-proveedor').includes(filter);
+                    if (childMatch) {
+                        hasChildMatch = true;
+                    }
+                    
+                    if (filter !== "") {
+                        child.style.display = childMatch ? "table-row" : "none";
+                    } else {
+                        child.style.display = group.classList.contains('expanded') ? "table-row" : "none";
+                    }
+                });
+
+                if (filter !== "") {
+                    group.style.display = (groupMatch || hasChildMatch) ? "table-row" : "none";
+                    if ((groupMatch || hasChildMatch) && !group.classList.contains('expanded')) {
+                        group.classList.add('expanded');
+                        children.forEach(child => {
+                            if (groupMatch && !hasChildMatch) child.style.display = "table-row";
+                        });
+                    }
+                } else {
+                    group.style.display = "table-row";
+                }
             });
         }
     </script>
